@@ -1,0 +1,257 @@
+#include<string.h>
+#include <stack>
+#include <iostream>
+using namespace std;
+	
+#define StringSize 100	//算术式最大长度
+#define Maxsize 100
+#define OK 1
+#define SqOVERFLOW -2
+#define ERROR 0
+
+typedef double OprandType;
+int Fbo;				
+int PandOptr(char opr);	  //判断字符类型		
+bool PandLegal(char s[]);	//判断算术式合法性	
+void FeedBack();			//错误反馈	
+char precede(char c1,char c2);	//判断运算符优先级
+double operate(OprandType a,char theta,OprandType b);
+					
+OprandType EvaluteExxpression(char s[]);
+					
+
+
+typedef int Status ;
+typedef char SElemType ;	
+typedef struct SqStack 
+{
+	SElemType elem[Maxsize];
+	int top;
+};
+void InitStack(SqStack &S)
+{
+	S.top=0;
+}
+void Push(SqStack &S,SElemType e)
+{
+	if(S.top==Maxsize-1)
+		exit(SqOVERFLOW);
+	else{
+		S.top++;
+		S.elem[S.top]=e;
+		}
+}
+Status StackEmpty(SqStack &S)
+{
+	if(S.top==0)
+		return OK;
+	return ERROR;
+}
+void Pop(SqStack &S,SElemType &e)
+{
+	if( StackEmpty(S) )
+		exit(SqOVERFLOW);
+	else{
+		e = S.elem[S.top];
+		S.top--;
+		}
+}
+SElemType GetTop(SqStack &S)
+{
+	if( StackEmpty(S) )
+		return ERROR;
+	return S.elem[S.top];
+}
+
+
+int main()
+{
+	char s[StringSize];
+	while(1)
+	{
+		cout<<"请输入算术式：\n";
+		cin>>s;
+		if(s[0]=='E'&&s[1]=='N'){break;}
+		if(!PandLegal(s))
+		{	//判断是否合法
+			FeedBack(); 
+			continue;//错误反馈
+		}
+		double sum;
+		sum=EvaluteExxpression(s);	
+		cout<<"输出结果："<<sum<<"\n";//输出
+	}
+	system("pause");
+	return 0;
+}
+int PandOptr(char opr)
+{	//判断字符类型
+	int bo;
+	if(opr>47&&opr<58)
+	{
+		bo=0;return bo;
+	}
+	switch (opr)
+	{
+	case '+':;
+	case '-':bo=2;break;
+	case '*':;
+	case '/':bo=5;break;
+	case '(':bo=-1;break;
+	case ')':bo=-2;break;
+	case '#':bo=-4;break;
+	case '.':bo=-6;break;
+	default :bo=-7;
+	}
+	return bo;
+}
+bool PandLegal(char s[])
+{	//判断算术式的合法性
+	Fbo=0;
+	int len  = strlen(s);
+	int i,i1,i2,n;
+	for(i=0;s[i]!='#'&&i<len;i++){}
+	if(i==len)	s[len++]='#';
+	n = i;
+	if(n<=0){Fbo=1;return false;}
+	for(i=0;i<n&&PandOptr(s[i])!=-7;i++){}
+	if(i<n)
+	{
+		Fbo=2;
+	return false;
+	}
+	if( (PandOptr(s[0])>0)||(PandOptr(s[n-1])>0) )
+	{
+		Fbo=3;
+		return false;
+	}
+	for(i=1;i<n;i++)
+	{
+		i1=PandOptr(s[i-1]);i2=PandOptr(s[i]);
+		if(i1==0||i2==0){continue;}
+		else if(i1>0&&i2>0)
+		{
+				Fbo=4;return false;
+		} 
+	}
+	SqStack stk;
+	InitStack(stk);
+	Push(stk,'#');char x;
+	for(i=0;i<n;i++)
+	{
+		if(s[i]=='(')
+			Push(stk,s[i]);
+		else if(s[i]==')' )
+		{
+			if(GetTop(stk)=='(')	Pop(stk,x);
+			else if(GetTop(stk)=='#')	break;
+		}
+	}
+	if(GetTop(stk)!='#'||i<n)
+	{
+		Fbo=5;
+		return false;
+	}
+	return true;
+}
+void FeedBack()
+{	//反馈函数
+	switch(Fbo)
+	{
+	case 1:cout<<"ERROR：未输入任何算术式\n";break;
+	case 2:cout<<"ERROR:算术式有符号错误\n";break;
+	case 3:;
+	case 4:cout<<"ERROR:运算符使用错误\n";break;
+	case 5:cout<<"ERROR：界限符错误\n";break;
+	}
+}
+char precede(char c1,char c2)
+{	//判断运算符优先级
+	char c0=0;
+	int i1,i2;
+	i1=PandOptr(c1);
+	i2=PandOptr(c2);
+	if(i1<0&&i2<0)
+	{
+		if(i1==-1)
+		{
+			if(i2==-1)		c0='<';
+			else if(i2==-2)	c0='=';
+		}
+		else if(i1==-2)
+		{
+			if(i2<-1)	c0='>';
+		}
+		else
+		{
+			if(i2==-1)		c0='<';
+			else if(i2==-3)	c0='=';
+		}
+	}
+	else 
+	{
+		if(i1==-1||i2==-1)		c0='<';
+		else if(i1==-2||i2==-2)	c0='>';
+		else
+		{
+			i1++;
+			if(i1<i2)	c0='<';
+			else		c0='>';
+		}
+	}
+	return c0;
+}
+double operate(OprandType a,char theta,OprandType b)
+{
+	double add;			
+	switch(theta)
+	{
+	case '+':add=a+b;break;
+	case '-':add=a-b;break;
+	case '*':add=1.0*a*b;break;
+	case '/':add=1.0*a/b;break;
+	}
+	return add;
+}
+OprandType EvaluteExxpression(char s[])
+{
+	SqStack OPTR;
+	InitStack(OPTR);	//实现算术式求值的函数
+	stack<OprandType> OPND;
+	Push(OPTR,'#');
+	char theta,x,c;
+	OprandType a,b;
+	int i=0;
+	c=s[i++];
+	while(c!='#'||GetTop(OPTR)!='#')
+	{
+		if(PandOptr(c)==0)
+		{		//成立，将字符串转为数值
+			int j=0,ex=1;
+			double add=0;
+			while(PandOptr(c)==0||c=='.')  
+			{
+				if(j)		ex*=10;	
+				if(c=='.')	j=1;
+				else		add=add*10+c-48;
+				c=s[i++];
+			}
+			if(j)
+				add/=ex;
+			OPND.push(add);
+		}
+		switch(precede(GetTop(OPTR),c) )
+		{
+		case '<':Push(OPTR,c);c=s[i++];break;
+		case '=':Pop(OPTR,x);c=s[i++];break;
+		case '>':
+			b=OPND.top();
+			OPND.pop();
+			a=OPND.top();
+			OPND.pop();
+			Pop(OPTR,theta);
+			OPND.push(operate(a,theta,b) );break;
+		}
+	}
+	return OPND.top() ;
+}
