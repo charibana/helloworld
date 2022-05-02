@@ -1,7 +1,7 @@
 #pragma once
 
-#ifndef PCH_H
-#define PCH_H
+//#ifndef PCH_H
+//#define PCH_H
 
 #include <iostream>
 #include <stdlib.h>
@@ -11,4 +11,9 @@
 #include <iomanip>
 #include <sstream>
 #include <fstream>
-#endif //PCH_H
+//#endif //PCH_H
+static std::string roundAny(float r, int precision) {
+	std::stringstream buffer;
+	buffer << std::fixed << std::setprecision(precision) << r;
+	return buffer.str();
+}
