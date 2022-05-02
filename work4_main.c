@@ -1,7 +1,3 @@
-#pragma once
-
-//#ifndef PCH_H
-//#define PCH_H
 
 #include <iostream>
 #include <stdlib.h>
@@ -11,7 +7,6 @@
 #include <iomanip>
 #include <sstream>
 #include <fstream>
-//#endif //PCH_H
 using namespace std;
 
 static std::string roundAny(float r, int precision) {
